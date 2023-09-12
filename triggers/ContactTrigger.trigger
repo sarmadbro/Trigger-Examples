@@ -1,21 +1,39 @@
 trigger ContactTrigger on Contact (before insert, before update, after insert, after update) {
 
-    if(Trigger.isBefore){
 
-        if(Trigger.isInsert){
-            for(Contact c: Trigger.new){
-                if(c.Age__c > 60 && c.isSeniorCitizen__c == false){
-                    c.isSeniorCitizen__c = true;
-                }
-            }
-        }
+    
+    //Trigger Control
+    Trigger_Control_mdt__mdt objTrgActive = [Select Is_Active__c from Trigger_Control_mdt__mdt where DeveloperName = 'ContactTrg'];
+    if(!objTrgActive.Is_Active__c ) return ;
 
-        if(Trigger.isUpdate){
-            for(Contact c: Trigger.new){
-                if(c.Age__c > 60 && c.isSeniorCitizen__c == false){
-                   c.isSeniorCitizen__c = true;
-                }
-            }
-        }
+ 
+
+    // instantiating an instance of contactTriggerHandler class.
+    contactTriggerHandler handler = new contactTriggerHandler();
+
+    // Before Insert
+    if(Trigger.isInsert && Trigger.isBefore)
+    {
+        handler.OnBeforeInsert(Trigger.new);
     }
+
+    // After Insert
+    else if(Trigger.isInsert && Trigger.isAfter)
+    {
+        handler.OnAfterInsert(Trigger.new, Trigger.newMap);
+    }
+
+    // Before Update
+    else if(Trigger.isUpdate && Trigger.isBefore)
+    {
+        handler.OnBeforeUpdate(Trigger.old, Trigger.new, Trigger.oldMap, Trigger.newMap);
+    }
+
+    // After Update
+    else if(Trigger.isUpdate && Trigger.isAfter)
+    {
+        handler.OnAfterUpdate(Trigger.old, Trigger.new, Trigger.oldMap, Trigger.newMap);
+    }
+
+
 }

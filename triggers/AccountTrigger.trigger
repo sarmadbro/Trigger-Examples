@@ -1,40 +1,39 @@
 trigger AccountTrigger on Account (before insert, before update, after insert, after update) {
 
-    if(Trigger.isAfter){
 
-        if(Trigger.isInsert){
 
-            List<Contact> contactsToUpdate = new List<Contact>();
-            for (Account acc : Trigger.new) {
-            if (acc.isActive__c == false) {
-                // Fetch related contacts of the account and update them
-                List<Contact> relatedContacts = [SELECT Id, isActive__c FROM Contact WHERE AccountId = :acc.Id];
-                for(Contact relatedContact : relatedContacts){
-                    relatedContact.isActive__c = false;
-                    contactsToUpdate.add(relatedContact);
-                }
-            }
-        }
-        update contactsToUpdate;
+    //Trigger Control
+    Trigger_Control_mdt__mdt objTrgActive = [Select Is_Active__c from Trigger_Control_mdt__mdt where DeveloperName = 'AccountTrg'];
+    if(!objTrgActive.Is_Active__c ) return ;
 
-        }
+ 
 
-        if(Trigger.isUpdate){
+    // instantiating an instance of AccountTriggerHandler class.
+    AccountTriggerHandler handler = new AccountTriggerHandler();
 
-            List<Contact> contactsToUpdate = new List<Contact>();
-            for (Account acc : Trigger.new) {
-            if (acc.isActive__c == false) {
-                // Fetch related contacts of the account and update them
-                List<Contact> relatedContacts = [SELECT Id, isActive__c FROM Contact WHERE AccountId = :acc.Id];
-                for(Contact relatedContact : relatedContacts){
-                    relatedContact.isActive__c = false;
-                    contactsToUpdate.add(relatedContact);
-                }
-            }
-        }
-        update contactsToUpdate;
-
-        }
-
+    // Before Insert
+    if(Trigger.isInsert && Trigger.isBefore)
+    {
+        handler.OnBeforeInsert(Trigger.new);
     }
+
+    // After Insert
+    else if(Trigger.isInsert && Trigger.isAfter)
+    {
+        handler.OnAfterInsert(Trigger.new, Trigger.newMap);
+    }
+
+    // Before Update
+    else if(Trigger.isUpdate && Trigger.isBefore)
+    {
+        handler.OnBeforeUpdate(Trigger.old, Trigger.new, Trigger.oldMap, Trigger.newMap);
+    }
+
+    // After Update
+    else if(Trigger.isUpdate && Trigger.isAfter)
+    {
+        handler.OnAfterUpdate(Trigger.old, Trigger.new, Trigger.oldMap, Trigger.newMap);
+    }
+
+
 }
