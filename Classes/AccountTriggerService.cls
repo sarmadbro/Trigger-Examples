@@ -1,6 +1,6 @@
 public with sharing class AccountTriggerService {
 
-   public static void updatingRelatedContacts(List<Account> newObjects, Map<Id, Account> newMap){
+   public static void updateRelatedContactsStatus(List<Account> newObjects, Boolean activ){
     try {
     List<Contact> contactsToUpdate = new List<Contact>();
     Set<Id> accountIds = new Set<Id>();
@@ -10,7 +10,7 @@ public with sharing class AccountTriggerService {
         }
         
         for(Contact relatedContact : [SELECT Id, isActive__c FROM Contact WHERE AccountId = :accountIds limit 1000]){
-            relatedContact.isActive__c = false;
+            relatedContact.isActive__c = activ;
             contactsToUpdate.add(relatedContact);
         }
 

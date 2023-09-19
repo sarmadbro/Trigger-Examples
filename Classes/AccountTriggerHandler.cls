@@ -1,23 +1,29 @@
 public with sharing class AccountTriggerHandler {
     
-   
     public void onBeforeInsert(List<Account> newObjects){  
         
     }
 
     public void OnAfterInsert(List<Account> newObjects, Map<Id, Account> newMap){
 
-    List<Account> accountsToUpdate = new List<Account>();
+    List<Account> accountsToActivateContacts = new List<Account>();
+    List<Account> accountsToDeactivateContacts = new List<Account>();
 
     for(Account acc : newObjects) {
         
-        if(acc.isActive__c == false) {
-            accountsToUpdate.add(acc);
+        if (acc.isActive__c == false) {
+            accountsToDeactivateContacts.add(acc);
+        }else{
+            accountsToActivateContacts.add(acc);
         }
-    }
 
-    if(!accountsToUpdate.isEmpty()) {
-        AccountTriggerService.updatingRelatedContacts(accountsToUpdate, newMap);
+    if(!accountsToActivateContacts.isEmpty()) {
+            AccountTriggerService.updateRelatedContactsStatus(accountsToActivateContacts , true);
+        }
+
+    if(!accountsToDeactivateContacts.isEmpty()) {
+            AccountTriggerService.updateRelatedContactsStatus(accountsToDeactivateContacts, false);
+        }
     }
     }
 
@@ -30,19 +36,29 @@ public with sharing class AccountTriggerHandler {
 
     public void onAfterUpdate(List<Account> oldObjects, List<Account> newObjects, Map<Id, Account> oldMap, Map<Id, Account> newMap){
 
-        List<Account> accountsToUpdate = new List<Account>();
+       
+        List<Account> accountsToActivateContacts = new List<Account>();
+        List<Account> accountsToDeactivateContacts = new List<Account>();
 
         for(Account acc : newObjects) {
             Account oldAccount = oldMap.get(acc.Id);
             Account newAccount = newMap.get(acc.Id);
 
-            if(oldAccount.isActive__c != newAccount.isActive__c && newAccount.isActive__c == false) {
-                accountsToUpdate.add(newAccount);
+            if(oldAccount.isActive__c != newAccount.isActive__c) {
+                if (newAccount.isActive__c == false) {
+                    accountsToDeactivateContacts.add(newAccount);
+                }else{
+                    accountsToActivateContacts.add(newAccount);
+                }
+              
             }
         }
 
-        if(!accountsToUpdate.isEmpty()) {
-            AccountTriggerService.updatingRelatedContacts(accountsToUpdate, newMap);
+        if(!accountsToActivateContacts.isEmpty()) {
+            AccountTriggerService.updateRelatedContactsStatus(accountsToActivateContacts , true);
+        }
+        if(!accountsToDeactivateContacts.isEmpty()) {
+            AccountTriggerService.updateRelatedContactsStatus(accountsToDeactivateContacts, false);
         }
     }
 
